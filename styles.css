@@ -77,16 +77,13 @@ img {
 }
 
 .brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--navy-strong), var(--blue-bright));
-  color: var(--paper);
-  font-family: "Fraunces", serif;
-  font-weight: 900;
+  width: 2.8rem;
+  height: 3.4rem;
+  border-radius: 0;
+  object-fit: contain;
+  padding: 0;
+  background: transparent;
+  border: 0;
 }
 
 .brand-label {
@@ -132,6 +129,15 @@ img {
   padding-top: 5rem;
   background:
     radial-gradient(circle at top center, rgba(255, 255, 255, 0.5), transparent 42%);
+}
+
+.developer-hero {
+  padding-top: 2.75rem;
+  padding-bottom: 1.25rem;
+}
+
+.developer-message-section {
+  padding-top: 0;
 }
 
 .flyer-hero-inner {
@@ -246,7 +252,9 @@ h3 {
 }
 
 .social-panel .button {
-  margin-top: 0.85rem;
+  display: flex;
+  width: fit-content;
+  margin-top: 1rem;
 }
 
 .inline-link {
@@ -255,21 +263,30 @@ h3 {
 }
 
 .flyer-centerpiece {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.05fr) minmax(0, 0.85fr);
-  align-items: center;
-  gap: 1.25rem;
-  margin-top: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .featured-flyer {
-  width: 100%;
+  width: auto;
+  height: clamp(340px, 32vw, 500px);
+  max-width: min(100%, 360px);
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.72);
   border-radius: 1.4rem;
   box-shadow: 0 28px 70px rgba(16, 33, 61, 0.25);
   border: 8px solid rgba(255, 255, 255, 0.82);
 }
 
 .featured-poster {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  align-items: center;
   margin: 0;
 }
 
@@ -285,10 +302,6 @@ h3 {
 .featured-poster figcaption a {
   color: var(--blue-bright);
   text-decoration: none;
-}
-
-.featured-poster-main {
-  transform: translateY(-0.5rem);
 }
 
 .section-heading {
@@ -369,11 +382,12 @@ h3 {
 }
 
 .flyer-frame {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.05fr) minmax(0, 0.85fr);
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
   width: min(100%, 1120px);
   margin: 0 auto;
   background:
@@ -381,12 +395,12 @@ h3 {
 }
 
 .campaign-flyer-image {
-  width: 100%;
+  width: auto;
+  height: clamp(340px, 32vw, 500px);
+  max-width: min(100%, 360px);
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.72);
   border-radius: 1rem;
-}
-
-.campaign-flyer-main {
-  transform: translateY(-0.5rem);
 }
 
 .message-box {
@@ -423,6 +437,50 @@ h3 {
   padding: 1.2rem 0 2rem;
 }
 
+.instagram-float {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 900;
+  box-shadow: 0 18px 45px rgba(16, 33, 61, 0.24);
+  background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+}
+
+.instagram-icon {
+  position: relative;
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 2px solid #fff;
+  border-radius: 0.42rem;
+}
+
+.instagram-icon::before {
+  content: "";
+  position: absolute;
+  inset: 0.3rem;
+  border: 2px solid #fff;
+  border-radius: 999px;
+}
+
+.instagram-icon span {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  width: 0.22rem;
+  height: 0.22rem;
+  border-radius: 999px;
+  background: #fff;
+}
+
 .footer-row {
   display: flex;
   justify-content: space-between;
@@ -453,15 +511,8 @@ h3 {
   }
 
   .three-up,
-  .split-layout,
-  .flyer-centerpiece,
-  .flyer-frame {
+  .split-layout {
     grid-template-columns: 1fr;
-  }
-
-  .featured-poster-main,
-  .campaign-flyer-main {
-    transform: none;
   }
 }
 
@@ -486,7 +537,20 @@ h3 {
     align-items: flex-start;
   }
 
+  .instagram-float {
+    right: 0.8rem;
+    bottom: 0.8rem;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.86rem;
+  }
+
   .featured-flyer {
     width: 100%;
+    height: auto;
+  }
+
+  .campaign-flyer-image {
+    width: 100%;
+    height: auto;
   }
 }
