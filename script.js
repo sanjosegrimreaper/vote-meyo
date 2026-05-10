@@ -1,5 +1,6 @@
-// === Parallax scroll ===
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// === Parallax scroll ===
 const parallaxItems = document.querySelectorAll("[data-parallax]");
 
 if (parallaxItems.length && !reduceMotion) {
@@ -33,6 +34,33 @@ if (parallaxItems.length && !reduceMotion) {
   updateParallax();
 }
 
+// === Reveal on scroll ===
+if (!reduceMotion && "IntersectionObserver" in window) {
+  const revealTargets = document.querySelectorAll(
+    ".section-head, .card, .index-card, .sticky, .bio-card, .share-card, .qr-card, .notebook, .collage-frame, .bulletin .polaroid, .vote-strip-inner"
+  );
+
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("reveal-in");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.08, rootMargin: "0px 0px -6% 0px" }
+  );
+
+  revealTargets.forEach((el) => revealObserver.observe(el));
+} else {
+  document
+    .querySelectorAll(
+      ".section-head, .card, .index-card, .sticky, .bio-card, .share-card, .qr-card, .notebook, .collage-frame, .bulletin .polaroid, .vote-strip-inner"
+    )
+    .forEach((el) => el.classList.add("reveal-in"));
+}
+
 // === Copy support message (campaign page) ===
 const copyButton = document.getElementById("copyMessage");
 const copyStatus = document.getElementById("copyStatus");
@@ -57,3 +85,134 @@ if (copyButton && copyStatus && messageBox) {
     }, 4000);
   });
 }
+
+// =============================================================================
+// === Vote counter (Supabase) =================================================
+// =============================================================================
+// SETUP: paste your Supabase project URL + anon key below.
+// While both are empty, the counter element stays hidden and vote buttons
+// behave normally — the page works fine either way.
+const VOTE_CONFIG = {
+  url: "", // e.g. "https://xxxxxxxx.supabase.co"
+  key: "", // long string starting with "eyJ"
+};
+
+const VOTE_LOCAL_KEY = "voteMeyoVoted";
+const VOTE_BUTTON_SELECTOR = 'a[href*="bit.ly/vote-for-meyo"]';
+const VOTE_POLL_MS = 15000;
+
+let lastKnownCount = null;
+
+function formatVoteCount(n) {
+  if (n === 0) return "be the first to vote!";
+  if (n === 1) return "1 person has voted";
+  return `${Number(n).toLocaleString("en-US")} people have voted`;
+}
+
+function paintVoteCount(n, isAuthoritative) {
+  if (n == null) return;
+  if (!isAuthoritative && lastKnownCount != null && n < lastKnownCount) {
+    n = lastKnownCount;
+  }
+  lastKnownCount = n;
+  document.querySelectorAll("[data-vote-counter]").forEach((el) => {
+    el.textContent = formatVoteCount(n);
+  });
+}
+
+function markVoteButtonsDone() {
+  document.querySelectorAll(VOTE_BUTTON_SELECTOR).forEach((btn) => {
+    btn.classList.add("button-voted");
+    btn.setAttribute("aria-disabled", "true");
+  });
+}
+
+function unmarkVoteButtons() {
+  document.querySelectorAll(VOTE_BUTTON_SELECTOR).forEach((btn) => {
+    btn.classList.remove("button-voted");
+    btn.removeAttribute("aria-disabled");
+  });
+}
+
+async function fetchVoteCount() {
+  if (!VOTE_CONFIG.url || !VOTE_CONFIG.key) return null;
+  try {
+    const res = await fetch(
+      `${VOTE_CONFIG.url}/rest/v1/vote_counts?id=eq.meyo&select=count`,
+      {
+        headers: {
+          apikey: VOTE_CONFIG.key,
+          Authorization: `Bearer ${VOTE_CONFIG.key}`,
+        },
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data[0]?.count ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function postVoteIncrement() {
+  if (!VOTE_CONFIG.url || !VOTE_CONFIG.key) return null;
+  try {
+    const res = await fetch(`${VOTE_CONFIG.url}/rest/v1/rpc/increment_meyo_vote`, {
+      method: "POST",
+      headers: {
+        apikey: VOTE_CONFIG.key,
+        Authorization: `Bearer ${VOTE_CONFIG.key}`,
+        "Content-Type": "application/json",
+      },
+      body: "{}",
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data === "number" ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+(function initVoteCounter() {
+  const hasCounter = document.querySelector("[data-vote-counter]");
+  const hasButtons = document.querySelector(VOTE_BUTTON_SELECTOR);
+  if (!hasCounter && !hasButtons) return;
+
+  // If localStorage says voted, mark UI now (before any network)
+  if (localStorage.getItem(VOTE_LOCAL_KEY) === "1") markVoteButtonsDone();
+
+  // Initial load + polling
+  fetchVoteCount().then((c) => paintVoteCount(c));
+  setInterval(() => {
+    fetchVoteCount().then((c) => paintVoteCount(c));
+  }, VOTE_POLL_MS);
+
+  // Wire up vote buttons
+  document.querySelectorAll(VOTE_BUTTON_SELECTOR).forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (localStorage.getItem(VOTE_LOCAL_KEY) === "1") return;
+
+      // Optimistic update
+      paintVoteCount((lastKnownCount ?? 0) + 1);
+      localStorage.setItem(VOTE_LOCAL_KEY, "1");
+      markVoteButtonsDone();
+
+      // Persist to backend
+      const real = await postVoteIncrement();
+      if (real == null) {
+        // Roll back on failure so the user can try again later
+        localStorage.removeItem(VOTE_LOCAL_KEY);
+        unmarkVoteButtons();
+        fetchVoteCount().then((c) => {
+          if (c != null) {
+            lastKnownCount = c;
+            paintVoteCount(c, true);
+          }
+        });
+      } else {
+        paintVoteCount(real, true);
+      }
+    });
+  });
+})();
