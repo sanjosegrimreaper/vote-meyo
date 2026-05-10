@@ -1041,22 +1041,10 @@ section { padding: 3.2rem 0; }
   margin-left: 0.15rem;
 }
 
-/* ========== Reveal animations (scroll-triggered) ========== */
-.js .section-head,
-.js .card,
-.js .index-card,
-.js .sticky,
-.js .bio-card,
-.js .share-card,
-.js .qr-card,
-.js .notebook,
-.js .collage-frame,
-.js .bulletin .polaroid,
-.js .vote-strip-inner {
-  opacity: 0;
-  transition: opacity 0.85s var(--ease);
-}
-.js .reveal-in { opacity: 1; }
+/* ========== Reveal — guarantees content visible ========== */
+/* Content is visible by default. The .reveal-in rule below force-overrides
+   any older cached CSS that might still be applying opacity: 0. */
+.reveal-in { opacity: 1 !important; }
 
 /* ========== Hero / page-hero load animations ========== */
 @keyframes hero-fade-up {
@@ -1088,23 +1076,13 @@ section { padding: 3.2rem 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .js .section-head,
-  .js .card,
-  .js .index-card,
-  .js .sticky,
-  .js .bio-card,
-  .js .share-card,
-  .js .qr-card,
-  .js .notebook,
-  .js .collage-frame,
-  .js .bulletin .polaroid,
-  .js .vote-strip-inner,
   .js .hero-text > *,
   .js .page-hero .container > *,
   .js .polaroid-hero {
     opacity: 1;
     animation: none;
   }
+  .reveal-in { animation: none; }
   .ribbon-track { animation: none; transform: translateX(-25%); }
   .button-glow { animation: none; }
 }

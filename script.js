@@ -34,32 +34,15 @@ if (parallaxItems.length && !reduceMotion) {
   updateParallax();
 }
 
-// === Reveal on scroll ===
-if (!reduceMotion && "IntersectionObserver" in window) {
-  const revealTargets = document.querySelectorAll(
+// === Reveal: force all content visible ===
+// Adds .reveal-in to every reveal target on page load. With current CSS this
+// is a no-op; with any older cached CSS that still hides content, the
+// .reveal-in rule (opacity: 1 !important) explicitly overrides the hiding.
+document
+  .querySelectorAll(
     ".section-head, .card, .index-card, .sticky, .bio-card, .share-card, .qr-card, .notebook, .collage-frame, .bulletin .polaroid, .vote-strip-inner"
-  );
-
-  const revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("reveal-in");
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.08, rootMargin: "0px 0px -6% 0px" }
-  );
-
-  revealTargets.forEach((el) => revealObserver.observe(el));
-} else {
-  document
-    .querySelectorAll(
-      ".section-head, .card, .index-card, .sticky, .bio-card, .share-card, .qr-card, .notebook, .collage-frame, .bulletin .polaroid, .vote-strip-inner"
-    )
-    .forEach((el) => el.classList.add("reveal-in"));
-}
+  )
+  .forEach((el) => el.classList.add("reveal-in"));
 
 // === Copy support message (campaign page) ===
 const copyButton = document.getElementById("copyMessage");
